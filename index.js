@@ -1,44 +1,28 @@
 const express = require('express');
-const morgan = require("morgan");
-const { createProxyMiddleware } = require('http-proxy-middleware');
+var request = require('request');
 
 // Create Express Server
 const app = express();
 
 // Configuration
 const PORT = 3000;
-const HOST = "localhost";
-const API_SERVICE_URL = "https://cryptobubbles.net";
-
-// https://cryptobubbles.net/backend/data/bubbles1000.usd.json
-
-// Logging
-app.use(morgan('dev'));
+const API_SERVICE_URL = "https://cryptobubbles.net/backend/data/bubbles1000.usd.json";
 
 // Info GET endpoint
 app.get('/info', (req, res, next) => {
     res.send('This is a proxy service which proxies to JSONPlaceholder API.');
 });
 
-// Authorization
-// app.use('', (req, res, next) => {
-//     if (req.headers.authorization) {
-//         next();
-//     } else {
-//         res.sendStatus(403);
-//     }
-// });
-
-// Proxy endpoints
-app.use('/', createProxyMiddleware({
-    target: API_SERVICE_URL,
-    changeOrigin: true,
-    pathRewrite: {
-        [`^/`]: '',
-    },
-}));
+app.get('/bubbles', (req, res) => {
+    request(API_SERVICE_URL, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+            console.log(body) // Print the google web page.
+            res.status(200).json(JSON.parse(body));
+        }
+    })
+});
 
 // Start Proxy
-app.listen(PORT, HOST, () => {
-    console.log(`Starting Proxy at ${HOST}:${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Starting Proxy at localhost:${PORT}`);
 });
